@@ -8,9 +8,22 @@ import (
 	"time"
 )
 
+func to_b(s string) []byte {
+	return []byte(s)
+}
+
 func readMessage(s string) (interface{}, error) {
 	m := &message{buffer: bytes.NewBufferString(s)}
 	return m.read()
+}
+
+func sendMessage(o interface{}) ([]byte, error) {
+	m := &message{buffer: &bytes.Buffer{}}
+	err := m.send(o)
+	if err != nil {
+		return []byte{}, err
+	}
+	return m.buffer.Bytes(), nil
 }
 
 func TestCbor(t *testing.T) {
@@ -163,6 +176,161 @@ func TestCbor(t *testing.T) {
 			So(err, ShouldBeNil)
 			ref, _ := uuid.ParseHex("684ef895-72a2-4298-bc5b-580f1c1d2707")
 			So(r, ShouldResemble, ref)
+		})
+	})
+
+	Convey("cbor sends", t, func() {
+		Convey("null", func() {
+			b, err := sendMessage(nil)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xf6"))
+		})
+
+		Convey("true", func() {
+			b, err := sendMessage(true)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xf5"))
+		})
+
+		Convey("false", func() {
+			b, err := sendMessage(false)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xf4"))
+		})
+
+		Convey("float32", func() {
+			b, err := sendMessage(float32(100000.0))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xfa\x47\xc3\x50\x00"))
+		})
+
+		Convey("float64", func() {
+			b, err := sendMessage(1.1)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xfb\x3f\xf1\x99\x99\x99\x99\x99\x9a"))
+		})
+
+		Convey("small uint", func() {
+			b, err := sendMessage(uint8(10))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x0a"))
+		})
+
+		Convey("uint8", func() {
+			b, err := sendMessage(uint8(42))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x18\x2a"))
+		})
+
+		Convey("uint16", func() {
+			b, err := sendMessage(uint16(1000))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x19\x03\xe8"))
+		})
+
+		Convey("uint32", func() {
+			b, err := sendMessage(uint32(1000000))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x1a\x00\x0f\x42\x40"))
+		})
+
+		Convey("uint64", func() {
+			b, err := sendMessage(uint64(1000000000000))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x1b\x00\x00\x00\xe8\xd4\xa5\x10\x00"))
+		})
+
+		Convey("small int", func() {
+			b, err := sendMessage(int8(-1))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x20"))
+		})
+
+		Convey("small positive int", func() {
+			b, err := sendMessage(int8(10))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x0a"))
+		})
+
+		Convey("int8", func() {
+			b, err := sendMessage(int8(-100))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x38\x63"))
+		})
+
+		Convey("int16", func() {
+			b, err := sendMessage(int16(-1000))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x39\x03\xe7"))
+		})
+
+		Convey("int32", func() {
+			b, err := sendMessage(int32(-1000000))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x3a\x00\x0f\x42\x3f"))
+		})
+
+		Convey("int64", func() {
+			b, err := sendMessage(int64(-1000000000000))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x3b\x00\x00\x00\xe8\xd4\xa5\x0f\xff"))
+		})
+
+		Convey("int", func() {
+			b, err := sendMessage(10)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x0a"))
+		})
+
+		Convey("strings", func() {
+			b, err := sendMessage("foobar")
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x66foobar"))
+		})
+
+		Convey("utf8 strings", func() {
+			b, err := sendMessage("föobar")
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x67f\xc3\xb6obar"))
+		})
+
+		Convey("blobs", func() {
+			b, err := sendMessage([]byte("foobar"))
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x46foobar"))
+		})
+
+		Convey("lists", func() {
+			b, err := sendMessage([]interface{}{"foo", "bar"})
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\x82\x63foo\x63bar"))
+		})
+
+		Convey("maps", func() {
+			b, err := sendMessage(map[string]interface{}{"bar": 2, "foo": 1})
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xa2\x63bar\x02\x63foo\x01"))
+		})
+
+		Convey("datetimes", func() {
+			ref, _ := time.Parse(time.RFC3339Nano, "2013-03-21T20:04:00Z")
+			b, err := sendMessage(ref)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xc0\x74\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30\x5a"))
+		})
+
+		Convey("micro datetimes", func() {
+			ref, _ := time.Parse(time.RFC3339Nano, "2013-03-21T20:04:00.000001Z")
+			b, err := sendMessage(ref)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xc0\x78\x1b\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30.000001\x5a"))
+		})
+
+		Convey("uuids", func() {
+			ref, _ := uuid.ParseHex("684ef895-72a2-4298-bc5b-580f1c1d2707")
+			b, err := sendMessage(ref)
+			So(err, ShouldBeNil)
+			So(b, ShouldResemble, to_b("\xc7\x50\x68\x4E\xF8\x95\x72\xA2\x42\x98\xBC\x5B\x58\x0F\x1C\x1D\x27\x07"))
 		})
 	})
 }

@@ -227,3 +227,138 @@ func (m *message) read() (interface{}, error) {
 		return nil, errors.New("invalid major in cbor protocol")
 	}
 }
+
+func (m *message) sendSimple(s byte) {
+	m.buffer.WriteByte(majorSimple<<5 | s)
+}
+
+func (m *message) sendTag(t byte) {
+	m.buffer.WriteByte(majorTag<<5 | t)
+}
+
+func (m *message) sendLen(typeByte byte, l uint64) {
+	typeByte = typeByte << 5
+	switch {
+	case l <= 23:
+		m.buffer.WriteByte(typeByte | byte(l))
+	case l < 0x100:
+		m.buffer.WriteByte(typeByte | 24)
+		m.buffer.WriteByte(uint8(l))
+	case l < 0x10000:
+		m.buffer.WriteByte(typeByte | 25)
+		binary.Write(m.buffer, binary.BigEndian, uint16(l))
+	case l < 0x100000000:
+		m.buffer.WriteByte(typeByte | 26)
+		binary.Write(m.buffer, binary.BigEndian, uint32(l))
+	default:
+		m.buffer.WriteByte(typeByte | 27)
+		binary.Write(m.buffer, binary.BigEndian, uint64(l))
+	}
+}
+
+func (m *message) send(pObj interface{}) error {
+	switch obj := pObj.(type) {
+
+	case nil:
+		m.sendSimple(simpleNull)
+
+	case bool:
+		if obj == true {
+			m.sendSimple(simpleTrue)
+		} else {
+			m.sendSimple(simpleFalse)
+		}
+
+	case uint8:
+		m.sendLen(majorUInt, uint64(obj))
+	case uint16:
+		m.sendLen(majorUInt, uint64(obj))
+	case uint32:
+		m.sendLen(majorUInt, uint64(obj))
+	case uint64:
+		m.sendLen(majorUInt, obj)
+
+	case int8:
+		if obj >= 0 {
+			m.send(uint64(obj))
+		} else {
+			m.sendLen(majorInt, uint64(-obj-1))
+		}
+	case int16:
+		if obj >= 0 {
+			m.send(uint64(obj))
+		} else {
+			m.sendLen(majorInt, uint64(-obj-1))
+		}
+	case int32:
+		if obj >= 0 {
+			m.send(uint64(obj))
+		} else {
+			m.sendLen(majorInt, uint64(-obj-1))
+		}
+	case int64:
+		if obj >= 0 {
+			m.send(uint64(obj))
+		} else {
+			m.sendLen(majorInt, uint64(-obj-1))
+		}
+
+	case int:
+		if obj >= 0 {
+			m.send(uint64(obj))
+		} else {
+			m.sendLen(majorInt, uint64(-obj-1))
+		}
+
+	case float32:
+		m.sendSimple(simpleFloat32)
+		return binary.Write(m.buffer, binary.BigEndian, &obj)
+	case float64:
+		m.sendSimple(simpleFloat64)
+		return binary.Write(m.buffer, binary.BigEndian, &obj)
+
+	case string:
+		m.sendLen(majorTextString, uint64(len(obj)))
+		return binary.Write(m.buffer, binary.BigEndian, []byte(obj))
+
+	case []byte:
+		m.sendLen(majorByteString, uint64(len(obj)))
+		return binary.Write(m.buffer, binary.BigEndian, obj)
+
+	case []interface{}:
+		m.sendLen(majorArray, uint64(len(obj)))
+		for _, v := range obj {
+			err := m.send(v)
+			if err != nil {
+				return err
+			}
+		}
+
+	case map[string]interface{}:
+		m.sendLen(majorMap, uint64(len(obj)))
+		for k, v := range obj {
+			err := m.send(k)
+			if err != nil {
+				return err
+			}
+			err = m.send(v)
+			if err != nil {
+				return err
+			}
+		}
+
+	case *uuid.UUID:
+		m.sendTag(tagUuid)
+		d := [16]byte(*obj)
+		m.send(d[:])
+
+	case time.Time:
+		m.sendTag(tagDateTime)
+		m.send(obj.Format(time.RFC3339Nano))
+
+	default:
+		return errors.New("cannot send object in cbor protocol")
+	}
+
+	return nil
+}
