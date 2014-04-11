@@ -37,7 +37,6 @@ const (
 
 type message struct {
 	buffer *bytes.Buffer
-	offset int
 }
 
 func (m *message) getLen(typeByte byte) (uint64, error) {
