@@ -36,7 +36,8 @@ const (
 )
 
 type message struct {
-	buffer *bytes.Buffer
+	buffer   *bytes.Buffer
+	createRO func(id uint64, name string) interface{}
 }
 
 func (m *message) getLen(typeByte byte) (uint64, error) {
@@ -77,6 +78,10 @@ func (m *message) readByteString(typeByte byte) ([]byte, error) {
 		return nil, errors.New("unexpected end of buffer in cbor protocol")
 	}
 	return b, nil
+}
+
+func (m *message) empty() bool {
+	return m.buffer.Len() == 0
 }
 
 func (m *message) read() (interface{}, error) {
@@ -185,6 +190,30 @@ func (m *message) read() (interface{}, error) {
 
 		case tagRecord:
 			return m.read()
+
+		case tagRemoteObject:
+			iList, err := m.read()
+			if err != nil {
+				return nil, err
+			}
+			list, ok := iList.([]interface{})
+			if !ok {
+				return nil, errors.New("expected list for RO in cbor")
+			}
+			if len(list) != 2 {
+				return nil, errors.New("expected list with 2 elements for RO in cbor")
+			}
+
+			id, ok := list[0].(uint64)
+			if !ok {
+				return nil, errors.New("expected int as ro id")
+			}
+			name, ok := list[1].(string)
+			if !ok {
+				return nil, errors.New("expected string as ro name")
+			}
+
+			return m.createRO(id, name), nil
 
 		default:
 			return nil, errors.New("invalid tag in cbor protocol")

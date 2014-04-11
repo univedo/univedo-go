@@ -5,10 +5,10 @@ import (
 )
 
 const (
-	romCall   = 1
-	romAnswer = 2
-	romNotify = 3
-	romDelete = 4
+	romCall   uint64 = 1
+	romAnswer        = 2
+	romNotify        = 3
+	romDelete        = 4
 )
 
 // A remote method result can either be an error or a message
@@ -30,14 +30,14 @@ type RemoteObject interface {
 
 // BasicRemoteObject can be used as a simple remote object without convenience wrappers
 type BasicRemoteObject struct {
-	id          int
+	id          uint64
 	session     sender
-	callID      int
-	callResults map[int]chan romResult
+	callID      uint64
+	callResults map[uint64]chan romResult
 }
 
-func createBasicRO(id int, session sender) RemoteObject {
-	m := make(map[int]chan romResult)
+func createBasicRO(id uint64, session sender) RemoteObject {
+	m := make(map[uint64]chan romResult)
 	return &BasicRemoteObject{id: id, session: session, callResults: m}
 }
 
@@ -47,7 +47,7 @@ func (ro *BasicRemoteObject) CallROM(name string, args []interface{}) (interface
 	ro.callResults[ro.callID] = c
 	defer delete(ro.callResults, ro.callID)
 
-	err := ro.session.sendMessage([]interface{}{ro.id, romCall, ro.callID, name, args})
+	err := ro.session.sendMessage([]interface{}{ro.id, uint64(romCall), ro.callID, name, args})
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (ro *BasicRemoteObject) CallROM(name string, args []interface{}) (interface
 
 // SendNotification sends a notification to the remote object
 func (ro *BasicRemoteObject) SendNotification(name string, args []interface{}) error {
-	return ro.session.sendMessage([]interface{}{ro.id, romNotify, name, args})
+	return ro.session.sendMessage([]interface{}{ro.id, uint64(romNotify), name, args})
 }
 
 func shiftSlice(s []interface{}) (interface{}, []interface{}) {
@@ -74,9 +74,13 @@ func shiftSlice(s []interface{}) (interface{}, []interface{}) {
 }
 
 func (ro *BasicRemoteObject) receive(msg []interface{}) error {
-	opcode, msg := shiftSlice(msg)
+	iOpcode, msg := shiftSlice(msg)
 	if msg == nil {
 		return errors.New("unexpected end of message")
+	}
+	opcode, ok := iOpcode.(uint64)
+	if !ok {
+		return errors.New("opcode must be an integer")
 	}
 
 	switch opcode {
@@ -85,17 +89,21 @@ func (ro *BasicRemoteObject) receive(msg []interface{}) error {
 		if msg == nil {
 			return errors.New("unexpected end of message")
 		}
-		callID, ok := iCallID.(int)
+		callID, ok := iCallID.(uint64)
 		if !ok {
-			return errors.New("call id must be an integer")
+			return errors.New("call id must be an uint")
 		}
 
 		c := ro.callResults[callID]
 		defer close(c)
 
-		status, msg := shiftSlice(msg)
+		iStatus, msg := shiftSlice(msg)
 		if msg == nil {
 			return errors.New("unexpected end of message")
+		}
+		status, ok := iStatus.(uint64)
+		if !ok {
+			return errors.New("status must be an uint")
 		}
 
 		switch status {
