@@ -21,7 +21,7 @@ func TestRemoteObject(t *testing.T) {
 		Convey("send notifications", func() {
 			s := new(testSession)
 			s.onMessage = func() {}
-			ro := createBasicRO(23, s)
+			ro := NewBasicRO(23, s)
 			err := ro.SendNotification("foo", []interface{}{1, "2", 3})
 			So(err, ShouldBeNil)
 			So(s.msg, ShouldResemble, []interface{}{uint64(23), uint64(3), "foo", []interface{}{1, "2", 3}})
@@ -29,7 +29,7 @@ func TestRemoteObject(t *testing.T) {
 
 		Convey("does rom calls", func() {
 			s := new(testSession)
-			ro := createBasicRO(23, s)
+			ro := NewBasicRO(23, s)
 			var rcvErr error
 			s.onMessage = func() {
 				rcvErr = ro.receive([]interface{}{uint64(2), uint64(0), uint64(0), 42})
@@ -43,7 +43,7 @@ func TestRemoteObject(t *testing.T) {
 
 		Convey("errors from rom calls", func() {
 			s := new(testSession)
-			ro := createBasicRO(23, s)
+			ro := NewBasicRO(23, s)
 			var rcvErr error
 			s.onMessage = func() {
 				rcvErr = ro.receive([]interface{}{uint64(2), uint64(0), uint64(2), "boom"})

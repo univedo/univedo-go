@@ -7,6 +7,9 @@ import (
 	"net/url"
 )
 
+// RegisteredRemoteObjects is a map from RO name to factory function
+var RegisteredRemoteObjects = make(map[string]func(id uint64, s sender) RemoteObject)
+
 // A Session with an univedo server
 type Session struct {
 	ws            *websocket.Conn
@@ -47,7 +50,7 @@ func Dial(url string) (*Session, error) {
 	}()
 
 	// Login
-	s.urologin = createBasicRO(0, s)
+	s.urologin = NewBasicRO(0, s)
 	s.remoteObjects[0] = s.urologin
 
 	creds := map[string]interface{}{"9744": "marvin"}
@@ -75,6 +78,19 @@ func (s *Session) Close() {
 // Ping the server
 func (s *Session) Ping(v interface{}) (interface{}, error) {
 	return s.session.CallROM("ping", []interface{}{v})
+}
+
+// GetPerspective returns a perspective from the server
+func (s *Session) GetPerspective(uuid string) (*Perspective, error) {
+	ro, err := s.session.CallROM("getPerspective", []interface{}{uuid})
+	if err != nil {
+		return nil, err
+	}
+	persp, ok := ro.(*Perspective)
+	if !ok {
+		return nil, errors.New("got unexpected RO type from getPerspective")
+	}
+	return persp, nil
 }
 
 func (s *Session) sendMessage(data []interface{}) error {
@@ -127,7 +143,13 @@ func (s *Session) receive() error {
 }
 
 func (s *Session) receiveRO(id uint64, name string) interface{} {
-	ro := createBasicRO(id, s)
+	var ro RemoteObject
+	factory := RegisteredRemoteObjects[name]
+	if factory != nil {
+		ro = factory(id, s)
+	} else {
+		ro = NewBasicRO(id, s)
+	}
 	s.remoteObjects[id] = ro
 	return ro
 }

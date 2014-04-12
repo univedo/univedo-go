@@ -36,7 +36,8 @@ type BasicRemoteObject struct {
 	callResults map[uint64]chan romResult
 }
 
-func createBasicRO(id uint64, session sender) RemoteObject {
+// NewBasicRO creates a new remote object
+func NewBasicRO(id uint64, session sender) *BasicRemoteObject {
 	m := make(map[uint64]chan romResult)
 	return &BasicRemoteObject{id: id, session: session, callResults: m}
 }
@@ -132,6 +133,10 @@ func (ro *BasicRemoteObject) receive(msg []interface{}) error {
 		default:
 			return errors.New("unknown status in remote object")
 		}
+
+		return nil
+
+	case romNotify:
 
 		return nil
 	default:
