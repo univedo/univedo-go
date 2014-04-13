@@ -31,6 +31,28 @@ func TestBuiltins(t *testing.T) {
 			shouldBeOk(statement, err)
 			result, err := statement.Execute()
 			shouldBeOk(result, err)
+			rows := result.Rows
+			So(<-rows, ShouldBeNil)
+			session.Close()
+		})
+
+		Convey("runs selects", func() {
+			session, err := Dial(testURL)
+			shouldBeOk(session, err)
+			perspective, err := session.GetPerspective("cefb4ed2-4ce3-4825-8550-b68a3c142f0a")
+			shouldBeOk(perspective, err)
+			query, err := perspective.Query()
+			shouldBeOk(query, err)
+			statement, err := query.Prepare("select * from fields_inclusive")
+			shouldBeOk(statement, err)
+			result, err := statement.Execute()
+			shouldBeOk(result, err)
+			rows := result.Rows
+			i := 0
+			for _ = range rows {
+				i++
+			}
+			So(i, ShouldBeGreaterThan, 100)
 			session.Close()
 		})
 	})

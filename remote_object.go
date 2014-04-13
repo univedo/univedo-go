@@ -30,16 +30,18 @@ type RemoteObject interface {
 
 // BasicRemoteObject can be used as a simple remote object without convenience wrappers
 type BasicRemoteObject struct {
-	id          uint64
-	session     sender
-	callID      uint64
-	callResults map[uint64]chan romResult
+	id            uint64
+	session       sender
+	callID        uint64
+	callResults   map[uint64]chan romResult
+	Notifications map[string]func([]interface{})
 }
 
 // NewBasicRO creates a new remote object
 func NewBasicRO(id uint64, session sender) *BasicRemoteObject {
 	m := make(map[uint64]chan romResult)
-	return &BasicRemoteObject{id: id, session: session, callResults: m}
+	n := make(map[string]func([]interface{}))
+	return &BasicRemoteObject{id: id, session: session, callResults: m, Notifications: n}
 }
 
 // CallROM calls a method on the remote object and returns its result
@@ -137,7 +139,29 @@ func (ro *BasicRemoteObject) receive(msg []interface{}) error {
 		return nil
 
 	case romNotify:
+		name, msg := shiftSlice(msg)
+		if name == nil {
+			return errors.New("unexpected end of message")
+		}
+		nameString, ok := name.(string)
+		if !ok {
+			return errors.New("notification name must be a string")
+		}
+		args, msg := shiftSlice(msg)
+		if args == nil {
+			return errors.New("unexpected end of message")
+		}
+		argsSlice, ok := args.([]interface{})
+		if !ok {
+			return errors.New("notification args must be a string")
+		}
 
+		f := ro.Notifications[nameString]
+		if f == nil {
+			return errors.New("unknown notification " + nameString)
+		}
+
+		go f(argsSlice)
 		return nil
 	default:
 		return errors.New("unknown opcode in remote object")

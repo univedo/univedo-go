@@ -73,10 +73,28 @@ func (p *Statement) Execute() (*Result, error) {
 // A Result in univedo
 type Result struct {
 	*BasicRemoteObject
+	Rows chan []interface{}
 }
 
 func newResult(id uint64, s sender) RemoteObject {
-	return &Result{NewBasicRO(id, s)}
+	r := new(Result)
+	r.BasicRemoteObject = NewBasicRO(id, s)
+	r.Rows = make(chan []interface{}, 10)
+	r.Notifications["setComplete"] = func([]interface{}) {
+		close(r.Rows)
+	}
+	r.Notifications["appendRow"] = func(args []interface{}) {
+		// TODO error handling
+		if len(args) != 1 {
+			panic("appendRow without args")
+		}
+		row, ok := args[0].([]interface{})
+		if !ok {
+			panic("appendRow without list")
+		}
+		r.Rows <- row
+	}
+	return r
 }
 
 func init() {
