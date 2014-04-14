@@ -4,17 +4,24 @@ import (
 	"bytes"
 	"code.google.com/p/go.net/websocket"
 	"errors"
+	// TODO remove
+	_ "fmt"
 	"net/url"
 )
 
-// RegisteredRemoteObjects is a map from RO name to factory function
-var RegisteredRemoteObjects = make(map[string]func(id uint64, s sender) RemoteObject)
+// registeredRemoteObjects is a map from RO name to factory function
+var registeredRemoteObjects = make(map[string]func(id uint64, s sender) RemoteObject)
+
+// RegisterRemoteObject adds a remote object factory for a RO name
+func RegisterRemoteObject(name string, factory func(id uint64, session sender) RemoteObject) {
+	registeredRemoteObjects[name] = factory
+}
 
 // A Session with an univedo server
 type Session struct {
+	RemoteObject
 	ws            *websocket.Conn
 	urologin      RemoteObject
-	session       RemoteObject
 	remoteObjects map[uint64]RemoteObject
 }
 
@@ -45,7 +52,8 @@ func Dial(url string) (*Session, error) {
 	s := &Session{ws: ws, remoteObjects: make(map[uint64]RemoteObject)}
 	go func() {
 		// TODO error handling
-		err := s.receive()
+		err := s.handleWebsocket()
+		/*		fmt.Printf("%s\n", err.Error())*/
 		_ = err
 	}()
 
@@ -65,7 +73,7 @@ func Dial(url string) (*Session, error) {
 		return nil, errors.New("getSession did not return a remote object")
 	}
 
-	s.session = session
+	s.RemoteObject = session
 
 	return s, nil
 }
@@ -77,20 +85,7 @@ func (s *Session) Close() {
 
 // Ping the server
 func (s *Session) Ping(v interface{}) (interface{}, error) {
-	return s.session.CallROM("ping", []interface{}{v})
-}
-
-// GetPerspective returns a perspective from the server
-func (s *Session) GetPerspective(uuid string) (*Perspective, error) {
-	ro, err := s.session.CallROM("getPerspective", []interface{}{uuid})
-	if err != nil {
-		return nil, err
-	}
-	persp, ok := ro.(*Perspective)
-	if !ok {
-		return nil, errors.New("got unexpected RO type from getPerspective")
-	}
-	return persp, nil
+	return s.CallROM("ping", []interface{}{v})
 }
 
 func (s *Session) sendMessage(data []interface{}) error {
@@ -101,7 +96,7 @@ func (s *Session) sendMessage(data []interface{}) error {
 	return websocket.Message.Send(s.ws, m.buffer.Bytes())
 }
 
-func (s *Session) receive() error {
+func (s *Session) handleWebsocket() error {
 	for {
 		var buffer []byte
 		err := websocket.Message.Receive(s.ws, &buffer)
@@ -144,7 +139,7 @@ func (s *Session) receive() error {
 
 func (s *Session) receiveRO(id uint64, name string) interface{} {
 	var ro RemoteObject
-	factory := RegisteredRemoteObjects[name]
+	factory := registeredRemoteObjects[name]
 	if factory != nil {
 		ro = factory(id, s)
 	} else {
