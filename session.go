@@ -62,7 +62,7 @@ func Dial(url string) (*Session, error) {
 	s.remoteObjects[0] = s.urologin
 
 	creds := map[string]interface{}{"9744": "marvin"}
-	iSession, err := s.urologin.CallROM("getSession", []interface{}{creds})
+	iSession, err := s.urologin.CallROM("getSession", creds)
 	if err != nil {
 		ws.Close()
 		return nil, err
@@ -85,10 +85,10 @@ func (s *Session) Close() {
 
 // Ping the server
 func (s *Session) Ping(v interface{}) (interface{}, error) {
-	return s.CallROM("ping", []interface{}{v})
+	return s.CallROM("ping", v)
 }
 
-func (s *Session) sendMessage(data []interface{}) error {
+func (s *Session) sendMessage(data ...interface{}) error {
 	m := &message{buffer: &bytes.Buffer{}}
 	for _, v := range data {
 		m.send(v)

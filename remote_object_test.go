@@ -10,7 +10,7 @@ type testSession struct {
 	onMessage func()
 }
 
-func (s *testSession) sendMessage(msg []interface{}) error {
+func (s *testSession) sendMessage(msg ...interface{}) error {
 	s.msg = msg
 	go s.onMessage()
 	return nil
@@ -22,7 +22,7 @@ func TestRemoteObject(t *testing.T) {
 			s := new(testSession)
 			s.onMessage = func() {}
 			ro := NewBasicRO(23, s)
-			err := ro.SendNotification("foo", []interface{}{1, "2", 3})
+			err := ro.SendNotification("foo", 1, "2", 3)
 			So(err, ShouldBeNil)
 			So(s.msg, ShouldResemble, []interface{}{uint64(23), uint64(3), "foo", []interface{}{1, "2", 3}})
 		})
@@ -34,7 +34,7 @@ func TestRemoteObject(t *testing.T) {
 			s.onMessage = func() {
 				rcvErr = ro.receive([]interface{}{uint64(2), uint64(0), uint64(0), 42})
 			}
-			res, err := ro.CallROM("foo", []interface{}{1, "2", 3})
+			res, err := ro.CallROM("foo", 1, "2", 3)
 			So(rcvErr, ShouldBeNil)
 			So(s.msg, ShouldResemble, []interface{}{uint64(23), uint64(1), uint64(0), "foo", []interface{}{1, "2", 3}})
 			So(err, ShouldBeNil)
@@ -48,7 +48,7 @@ func TestRemoteObject(t *testing.T) {
 			s.onMessage = func() {
 				rcvErr = ro.receive([]interface{}{uint64(2), uint64(0), uint64(2), "boom"})
 			}
-			res, err := ro.CallROM("foo", []interface{}{1, "2", 3})
+			res, err := ro.CallROM("foo", 1, "2", 3)
 			So(rcvErr, ShouldBeNil)
 			So(s.msg, ShouldResemble, []interface{}{uint64(23), uint64(1), uint64(0), "foo", []interface{}{1, "2", 3}})
 			So(err, ShouldNotBeNil)

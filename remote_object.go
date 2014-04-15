@@ -18,13 +18,13 @@ type romResult struct {
 }
 
 type sender interface {
-	sendMessage([]interface{}) error
+	sendMessage(...interface{}) error
 }
 
 // RemoteObject provides methods for calling remote methods
 type RemoteObject interface {
-	CallROM(string, []interface{}) (interface{}, error)
-	SendNotification(string, []interface{}) error
+	CallROM(string, ...interface{}) (interface{}, error)
+	SendNotification(string, ...interface{}) error
 	receive(msg []interface{}) error
 }
 
@@ -45,12 +45,12 @@ func NewBasicRO(id uint64, session sender) *BasicRemoteObject {
 }
 
 // CallROM calls a method on the remote object and returns its result
-func (ro *BasicRemoteObject) CallROM(name string, args []interface{}) (interface{}, error) {
+func (ro *BasicRemoteObject) CallROM(name string, args ...interface{}) (interface{}, error) {
 	c := make(chan romResult)
 	ro.callResults[ro.callID] = c
 	defer delete(ro.callResults, ro.callID)
 
-	err := ro.session.sendMessage([]interface{}{ro.id, uint64(romCall), ro.callID, name, args})
+	err := ro.session.sendMessage(ro.id, uint64(romCall), ro.callID, name, args)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +65,8 @@ func (ro *BasicRemoteObject) CallROM(name string, args []interface{}) (interface
 }
 
 // SendNotification sends a notification to the remote object
-func (ro *BasicRemoteObject) SendNotification(name string, args []interface{}) error {
-	return ro.session.sendMessage([]interface{}{ro.id, uint64(romNotify), name, args})
+func (ro *BasicRemoteObject) SendNotification(name string, args ...interface{}) error {
+	return ro.session.sendMessage(ro.id, uint64(romNotify), name, args)
 }
 
 func shiftSlice(s []interface{}) (interface{}, []interface{}) {

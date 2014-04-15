@@ -33,7 +33,7 @@ func (UnivedoDriver) Open(name string) (driver.Conn, error) {
 		return nil, err
 	}
 
-	perspective, err := getRoFromROM(session, "getPerspective", []interface{}{perspectiveName})
+	perspective, err := getRoFromROM(session, "getPerspective", perspectiveName)
 	if err != nil {
 		return nil, err
 	}
@@ -61,11 +61,11 @@ func (conn *Conn) Close() error {
 
 // Prepare a statement as required by database/sql
 func (conn *Conn) Prepare(query string) (driver.Stmt, error) {
-	queryRO, err := getRoFromROM(conn.perspective, "query", []interface{}{})
+	queryRO, err := getRoFromROM(conn.perspective, "query")
 	if err != nil {
 		return nil, err
 	}
-	stmtRO, err := getRoFromROM(queryRO, "prepare", []interface{}{query})
+	stmtRO, err := getRoFromROM(queryRO, "prepare", query)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (s *stmt) Exec(binds []driver.Value) (driver.Result, error) {
 
 func (s *stmt) Query(binds []driver.Value) (driver.Rows, error) {
 	// Read columns
-	colsI, err := s.CallROM("getColumnNames", []interface{}{})
+	colsI, err := s.CallROM("getColumnNames")
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +249,7 @@ func execStatement(stmt *stmt, binds []driver.Value) (*result, error) {
 	for i, v := range binds {
 		bindsI[strconv.Itoa(i)] = v
 	}
-	r, err := getRoFromROM(stmt, "execute", []interface{}{bindsI})
+	r, err := getRoFromROM(stmt, "execute", bindsI)
 	if err != nil {
 		return nil, err
 	}
@@ -260,8 +260,8 @@ func execStatement(stmt *stmt, binds []driver.Value) (*result, error) {
 	return result, nil
 }
 
-func getRoFromROM(ro RemoteObject, rom string, args []interface{}) (RemoteObject, error) {
-	roI, err := ro.CallROM(rom, args)
+func getRoFromROM(ro RemoteObject, rom string, args ...interface{}) (RemoteObject, error) {
+	roI, err := ro.CallROM(rom, args...)
 	if err != nil {
 		return nil, err
 	}
