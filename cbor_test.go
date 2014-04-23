@@ -305,7 +305,7 @@ func TestCbor(t *testing.T) {
 		Convey("maps", func() {
 			b, err := sendMessage(map[string]interface{}{"bar": 2, "foo": 1})
 			So(err, ShouldBeNil)
-			So(b, ShouldResemble, []byte("\xa2\x63bar\x02\x63foo\x01"))
+			So(bytes.Equal(b, []byte("\xa2\x63bar\x02\x63foo\x01")) || bytes.Equal(b, []byte("\xa2\x63foo\x01\x63bar\x02")), ShouldBeTrue)
 		})
 
 		Convey("datetimes", func() {
