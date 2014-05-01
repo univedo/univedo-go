@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const testURL = "ws://localhost:9000/f8018f09-fb75-4d3d-8e11-44b2dc796130"
+const testURL = "ws://vagrant:80/f8018f09-fb75-4d3d-8e11-44b2dc796130"
 
 func pingTest(v interface{}) {
 	session, err := Dial(testURL)
