@@ -61,7 +61,7 @@ func Dial(url string) (*Session, error) {
 	s.urologin = NewBasicRO(0, s)
 	s.remoteObjects[0] = s.urologin
 
-	creds := map[string]interface{}{"9744": "marvin"}
+	creds := map[string]interface{}{"username": "marvin"}
 	iSession, err := s.urologin.CallROM("getSession", creds)
 	if err != nil {
 		ws.Close()

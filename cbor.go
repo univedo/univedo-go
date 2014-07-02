@@ -22,9 +22,9 @@ const (
 const (
 	tagDateTime     = 0
 	tagDecimal      = 4
-	tagRemoteObject = 6
-	tagUuid         = 7
-	tagRecord       = 8
+	tagRemoteObject = 27
+	tagUuid         = 37
+	tagRecord       = 38
 )
 
 const (
@@ -204,13 +204,13 @@ func (m *message) read() (interface{}, error) {
 				return nil, errors.New("expected list with 2 elements for RO in cbor")
 			}
 
-			id, ok := list[0].(uint64)
-			if !ok {
-				return nil, errors.New("expected int as ro id")
-			}
-			name, ok := list[1].(string)
+			name, ok := list[0].(string)
 			if !ok {
 				return nil, errors.New("expected string as ro name")
+			}
+			id, ok := list[1].(uint64)
+			if !ok {
+				return nil, errors.New("expected int as ro id")
 			}
 
 			return m.createRO(id, name), nil
@@ -260,10 +260,6 @@ func (m *message) sendSimple(s byte) {
 	m.buffer.WriteByte(majorSimple<<5 | s)
 }
 
-func (m *message) sendTag(t byte) {
-	m.buffer.WriteByte(majorTag<<5 | t)
-}
-
 func (m *message) sendLen(typeByte byte, l uint64) {
 	typeByte = typeByte << 5
 	switch {
@@ -282,6 +278,10 @@ func (m *message) sendLen(typeByte byte, l uint64) {
 		m.buffer.WriteByte(typeByte | 27)
 		binary.Write(m.buffer, binary.BigEndian, uint64(l))
 	}
+}
+
+func (m *message) sendTag(t uint64) {
+	m.sendLen(majorTag, t)
 }
 
 func (m *message) send(pObj interface{}) error {

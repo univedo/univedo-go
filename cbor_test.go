@@ -148,7 +148,7 @@ func TestCbor(t *testing.T) {
 		})
 
 		Convey("records", func() {
-			r, err := readMessage("\xc8\x18\x2a")
+			r, err := readMessage("\xd8\x26\x18\x2a")
 			So(err, ShouldBeNil)
 			So(r, ShouldEqual, 42)
 		})
@@ -168,7 +168,7 @@ func TestCbor(t *testing.T) {
 		})
 
 		Convey("uuids", func() {
-			r, err := readMessage("\xc7\x50\x68\x4E\xF8\x95\x72\xA2\x42\x98\xBC\x5B\x58\x0F\x1C\x1D\x27\x07")
+			r, err := readMessage("\xd8\x25\x50\x68\x4E\xF8\x95\x72\xA2\x42\x98\xBC\x5B\x58\x0F\x1C\x1D\x27\x07")
 			So(err, ShouldBeNil)
 			ref, _ := uuid.ParseHex("684ef895-72a2-4298-bc5b-580f1c1d2707")
 			So(r, ShouldResemble, ref)
@@ -326,7 +326,7 @@ func TestCbor(t *testing.T) {
 			ref, _ := uuid.ParseHex("684ef895-72a2-4298-bc5b-580f1c1d2707")
 			b, err := sendMessage(ref)
 			So(err, ShouldBeNil)
-			So(b, ShouldResemble, []byte("\xc7\x50\x68\x4E\xF8\x95\x72\xA2\x42\x98\xBC\x5B\x58\x0F\x1C\x1D\x27\x07"))
+			So(b, ShouldResemble, []byte("\xd8\x25\x50\x68\x4E\xF8\x95\x72\xA2\x42\x98\xBC\x5B\x58\x0F\x1C\x1D\x27\x07"))
 		})
 	})
 }

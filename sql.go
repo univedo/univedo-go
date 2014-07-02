@@ -69,12 +69,49 @@ func (conn *Conn) Prepare(query string) (driver.Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
+	s, ok := stmtRO.(*stmt)
+	if !ok {
+		return nil, errors.New("expected com.univedo.statement from prepare")
+	}
 
-	return &stmt{stmtRO}, nil
+	return s, nil
 }
 
+// A statement in univedo
+// Implements the Stmt interface from sql/driver
 type stmt struct {
-	RemoteObject
+	*BasicRemoteObject
+	columnNames chan []string
+}
+
+func newStatement(id uint64, send sender) RemoteObject {
+	s := new(stmt)
+	s.BasicRemoteObject = NewBasicRO(id, send)
+
+	s.columnNames = make(chan []string)
+
+	s.Notifications["setColumnNames"] = func(args []interface{}) {
+		// TODO error handling
+		if len(args) != 1 {
+			panic("setColumnNames without args")
+		}
+		colNamesI, ok := args[0].([]interface{})
+		if !ok {
+			panic("setColumnNames without []interface")
+		}
+		colNames := make([]string, len(colNamesI))
+		for i, v := range colNamesI {
+			str, ok := v.(string)
+			if !ok {
+				panic("setColumnNames without strings")
+			}
+			colNames[i] = str
+		}
+		s.columnNames <- colNames
+		close(s.columnNames)
+	}
+
+	return s
 }
 
 func (s *stmt) Close() error {
@@ -86,23 +123,7 @@ func (s *stmt) Exec(binds []driver.Value) (driver.Result, error) {
 }
 
 func (s *stmt) Query(binds []driver.Value) (driver.Rows, error) {
-	// Read columns
-	colsI, err := s.CallROM("getColumnNames")
-	if err != nil {
-		return nil, err
-	}
-	colsISlice, ok := colsI.([]interface{})
-	if !ok {
-		return nil, errors.New("expected array from getColumnNames")
-	}
-	cols := make([]string, len(colsISlice))
-	for i, v := range colsISlice {
-		str, ok := v.(string)
-		if !ok {
-			return nil, errors.New("expected array of strings from getColumnNames")
-		}
-		cols[i] = str
-	}
+	cols := <-s.columnNames
 
 	result, err := execStatement(s, binds)
 	if err != nil {
@@ -151,39 +172,39 @@ func newResult(id uint64, s sender) RemoteObject {
 		close(r.rows)
 	}
 
-	r.Notifications["appendRow"] = func(args []interface{}) {
+	r.Notifications["setTuple"] = func(args []interface{}) {
 		// TODO error handling
 		if len(args) != 1 {
-			panic("appendRow without args")
+			panic("setTuple without args")
 		}
 		row, ok := args[0].([]interface{})
 		if !ok {
-			panic("appendRow without list")
+			panic("setTuple without list")
 		}
 		r.rows <- row
 	}
 
-	r.Notifications["setRecord"] = func(args []interface{}) {
+	r.Notifications["setId"] = func(args []interface{}) {
 		// TODO error handling
 		if len(args) != 1 {
-			panic("setRecord without args")
+			panic("setId without args")
 		}
 		id, ok := args[0].(uint64)
 		if !ok {
-			panic("setRecord without uint64")
+			panic("setId without uint64")
 		}
 		r.lastInsertedID <- id
 		close(r.lastInsertedID)
 	}
 
-	r.Notifications["setAffectedRecords"] = func(args []interface{}) {
+	r.Notifications["setNAffectedRecords"] = func(args []interface{}) {
 		// TODO error handling
 		if len(args) != 1 {
-			panic("setAffected without args")
+			panic("setNAffectedRecords without args")
 		}
 		num, ok := args[0].(uint64)
 		if !ok {
-			panic("setAffected without uint64")
+			panic("setNAffectedRecords without uint64")
 		}
 		r.rowsAffected <- num
 		close(r.rowsAffected)
@@ -275,4 +296,5 @@ func getRoFromROM(ro RemoteObject, rom string, args ...interface{}) (RemoteObjec
 func init() {
 	sql.Register("univedo", &UnivedoDriver{})
 	RegisterRemoteObject("com.univedo.result", newResult)
+	RegisterRemoteObject("com.univedo.statement", newStatement)
 }
