@@ -194,6 +194,7 @@ func newResult(id uint64, s sender) RemoteObject {
 			panic("setId without uint64")
 		}
 		r.lastInsertedID <- id
+		r.rowsAffected <- 1
 		close(r.lastInsertedID)
 	}
 
@@ -258,7 +259,7 @@ func (r *result) RowsAffected() (int64, error) {
 		return 0, err
 	case num, ok := <-r.rowsAffected:
 		if !ok {
-			return 0, errors.New("lastInsertId called twice")
+			return 0, errors.New("rowsAffected called twice")
 		}
 		return int64(num), nil
 		// TODO handle invalid cases

@@ -62,6 +62,9 @@ func TestSql(t *testing.T) {
 			So(err, ShouldBeNil)
 			id, err := result.LastInsertId()
 			So(err, ShouldBeNil)
+			num, err := result.RowsAffected()
+			So(err, ShouldBeNil)
+			So(num, ShouldEqual, 1)
 			rows, err := db.Query("select id, dummy_int8 from dummy where id = ?", id)
 			So(err, ShouldBeNil)
 			var id2, dummyInt int64
