@@ -148,7 +148,7 @@ func TestCbor(t *testing.T) {
 		})
 
 		Convey("records", func() {
-			r, err := readMessage("\xd8\x26\x18\x2a")
+			r, err := readMessage("\xd8\x27\x18\x2a")
 			So(err, ShouldBeNil)
 			So(r, ShouldEqual, 42)
 		})

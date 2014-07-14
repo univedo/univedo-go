@@ -46,7 +46,7 @@ func TestRemoteObject(t *testing.T) {
 			ro := NewBasicRO(23, s)
 			var rcvErr error
 			s.onMessage = func() {
-				rcvErr = ro.receive([]interface{}{uint64(2), uint64(0), uint64(2), "boom"})
+				rcvErr = ro.receive([]interface{}{uint64(2), uint64(0), uint64(1), "boom"})
 			}
 			res, err := ro.CallROM("foo", 1, "2", 3)
 			So(rcvErr, ShouldBeNil)

@@ -24,7 +24,7 @@ const (
 	tagDecimal      = 4
 	tagRemoteObject = 27
 	tagUuid         = 37
-	tagRecord       = 38
+	tagRecord       = 39
 )
 
 const (

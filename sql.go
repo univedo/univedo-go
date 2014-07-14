@@ -111,6 +111,8 @@ func newStatement(id uint64, send sender) RemoteObject {
 		close(s.columnNames)
 	}
 
+	s.Notifications["setColumnTypes"] = func(args []interface{}) {}
+
 	return s
 }
 

@@ -121,7 +121,7 @@ func (ro *BasicRemoteObject) receive(msg []interface{}) error {
 			}
 			c <- romResult{value: result}
 
-		case 2:
+		case 1:
 			err, msg := shiftSlice(msg)
 			if msg == nil {
 				return errors.New("unexpected end of message")
