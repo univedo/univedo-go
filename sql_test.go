@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-const testPerspectiveURL = "ws://vagrant:80/f8018f09-fb75-4d3d-8e11-44b2dc796130/34af6f12-6a4d-43ca-bc21-903f26b6a2e2"
+const testPerspectiveURL = "ws://vagrant:80/f8018f09-fb75-4d3d-8e11-44b2dc796130/cefb4ed2-4ce3-4825-8550-b68a3c142f0a"
 
 func TestSql(t *testing.T) {
 	Convey("sql", t, func() {
