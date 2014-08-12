@@ -2,8 +2,9 @@ package univedo
 
 import (
 	"bytes"
-	"code.google.com/p/go.net/websocket"
 	"errors"
+
+	"code.google.com/p/go.net/websocket"
 	// TODO remove
 	_ "fmt"
 	"net/url"
@@ -88,6 +89,12 @@ func (s *Session) Ping(v interface{}) (interface{}, error) {
 	return s.CallROM("ping", v)
 }
 
+// ApplyUTS uses a uts file
+func (s *Session) ApplyUTS(utsString string) error {
+	_, err := s.CallROM("applyUts", utsString)
+	return err
+}
+
 func (s *Session) sendMessage(data ...interface{}) error {
 	m := &message{buffer: &bytes.Buffer{}}
 	for _, v := range data {
@@ -121,7 +128,7 @@ func (s *Session) handleWebsocket() error {
 			return errors.New("ro not known")
 		}
 
-		data := make([]interface{}, 0)
+		var data []interface{}
 		for !msg.empty() {
 			v, err := msg.read()
 			if err != nil {
