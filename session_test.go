@@ -1,12 +1,14 @@
 package univedo
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
+	"io/ioutil"
 	"testing"
 	"time"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-const testURL = "ws://vagrant:80/f8018f09-fb75-4d3d-8e11-44b2dc796130"
+const testURL = "ws://localhost:4242/f8018f09-fb75-4d3d-8e11-44b2dc796130"
 
 func pingTest(v interface{}) {
 	session, err := Dial(testURL)
@@ -66,6 +68,17 @@ func TestSession(t *testing.T) {
 		Convey("pings times", func() {
 			t, _ := time.Parse(time.RFC3339Nano, "2013-03-21T20:04:00.000001Z")
 			pingTest(t)
+		})
+
+		Convey("apply uts", func() {
+			session, err := Dial(testURL)
+			So(err, ShouldBeNil)
+			So(session, ShouldNotBeNil)
+			testFile, err := ioutil.ReadFile("test.uts")
+			So(err, ShouldBeNil)
+			_, err = session.ApplyUTS(string(testFile))
+			So(err, ShouldBeNil)
+			defer session.Close()
 		})
 	})
 }
