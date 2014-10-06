@@ -6,8 +6,8 @@ import (
 	"errors"
 	"io"
 	"net/url"
-	"path"
 	"strconv"
+	"strings"
 )
 
 // UnivedoDriver implements the interface required by database/sql
@@ -21,14 +21,22 @@ func (UnivedoDriver) Open(name string) (driver.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	bucketName, perspectiveName := path.Split(u.Path)
-	if len(bucketName) == 0 || len(perspectiveName) == 0 {
+	pathComponents := strings.Split(strings.Trim(u.Path, "/"), "/")
+	if len(pathComponents) != 2 {
 		return nil, errors.New("requires bucket and perspective name")
 	}
-	u.Path = bucketName
+	bucketName := pathComponents[0]
+	perspectiveName := pathComponents[1]
 
-	// Open session and perspective
-	session, err := Dial(u.String())
+	u.Path = "/"
+
+	// Open connection and perspective
+	connection, err := Dial(u.String())
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := connection.GetSession(bucketName, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -38,12 +46,12 @@ func (UnivedoDriver) Open(name string) (driver.Conn, error) {
 		return nil, err
 	}
 
-	return &Conn{Session: session, perspective: perspective}, nil
+	return &Conn{Connection: connection, perspective: perspective}, nil
 }
 
 // Conn implements a connection as required by database/sql
 type Conn struct {
-	Session     *Session
+	Connection  *Connection
 	perspective RemoteObject
 }
 
@@ -55,7 +63,7 @@ func (conn *Conn) Begin() (driver.Tx, error) {
 // Close the connection as required by database/sql
 func (conn *Conn) Close() error {
 	// TODO error handling
-	conn.Session.Close()
+	conn.Connection.Close()
 	return nil
 }
 

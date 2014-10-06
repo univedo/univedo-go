@@ -8,16 +8,19 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-const testURL = "ws://vagrant:80/f8018f09-fb75-4d3d-8e11-44b2dc796130"
+const testURL = "ws://localhost:9011/"
 
 func pingTest(v interface{}) {
-	session, err := Dial(testURL)
+	connection, err := Dial(testURL)
+	So(err, ShouldBeNil)
+	So(connection, ShouldNotBeNil)
+	session, err := connection.GetSession("79CB0F8E-3D90-484A-9A88-B13E97FA65D9", map[string]interface{}{})
 	So(err, ShouldBeNil)
 	So(session, ShouldNotBeNil)
 	pong, err := session.Ping(v)
 	So(err, ShouldBeNil)
 	So(pong, ShouldResemble, v)
-	session.Close()
+	connection.Close()
 }
 
 func TestSession(t *testing.T) {
@@ -71,14 +74,17 @@ func TestSession(t *testing.T) {
 		})
 
 		Convey("apply uts", func() {
-			session, err := Dial(testURL)
+			connection, err := Dial(testURL)
+			So(err, ShouldBeNil)
+			So(connection, ShouldNotBeNil)
+			session, err := connection.GetSession("79CB0F8E-3D90-484A-9A88-B13E97FA65D9", map[string]interface{}{})
 			So(err, ShouldBeNil)
 			So(session, ShouldNotBeNil)
 			testFile, err := ioutil.ReadFile("test.uts")
 			So(err, ShouldBeNil)
 			err = session.ApplyUTS(string(testFile))
 			So(err, ShouldBeNil)
-			defer session.Close()
+			defer connection.Close()
 		})
 	})
 }

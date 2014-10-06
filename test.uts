@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uts date="2014-10-06 13:11:04 +0000" generator="uspec" version="1.0">
+  <specification>
+    <tables>
+      <table name="Tables" description="Atomic table objects in the Univedo data model." uuid="af4ffbee-0bfa-4211-9e6b-726b921df081">
+        <fields>
+          <field name="name" description="" type="char" length="50" uuid="607b39d7-b959-4ccf-8a65-94f6c5e1d9e5"/>
+          <field name="uuid" description="" type="uuid" uuid="1c3fdf6a-c86a-4bc7-86d3-0bcb177b4e86"/>
+          <field name="selective" description="" type="bool" uuid="01ab22c1-e78e-4323-b635-5f9748597c1f"/>
+          <field name="description" description="" type="text" uuid="ebc42780-12bd-4844-a712-f5feda39ac38"/>
+        </fields>
+      </table>
+      <table name="Fields" description="Columns in utoms or tables in the Univedo data model." uuid="76231b4f-0c1a-453f-9cf4-f299bd043436">
+        <fields>
+          <field name="name" description="" type="char" length="50" uuid="00397067-f1b1-44b7-8637-769e0f86e6fd"/>
+          <field name="uuid" description="" type="uuid" uuid="d23f4669-2ab7-42ac-98e2-467ef332b47d"/>
+          <field name="type" description="" type="char" length="20" uuid="7dbe9ebb-5178-4aa5-91bb-096fb1ffb894"/>
+          <field name="foreign_key" description="" type="id" uuid="cd380935-5915-4b65-ade0-a5fa1144ee2e"/>
+          <field name="foreign_table" description="" type="id" uuid="ec74db31-3bc6-409c-ae2e-9a6b8d1f2a6c"/>
+          <field name="foreign_inverse" description="" type="bool" uuid="90634fbe-9818-490d-951b-1b81ffe9cf8e"/>
+          <field name="description" description="" type="text" uuid="9b1014e1-ec8e-4231-8746-36b0e8c2379f"/>
+        </fields>
+      </table>
+      <table name="Dummy" description="Dummy utom for test purposes.&#13;&#10;&#13;&#10;Apps can use this utom for testing but should not make any assumptions on data." uuid="195f5ecf-7da9-46c7-af09-3e6c0aaaf782">
+        <fields>
+          <field name="dummy_int8" description="" type="integer" length="1" uuid="43afa38a-28c0-46fc-bd0e-4e302e8583ae"/>
+          <field name="dummy_bool" description="" type="bool" uuid="6666c7a8-ae19-470a-88c3-5410f0ef6cbd"/>
+          <field name="dummy_blob" description="" type="blob" uuid="9ddabd19-4af4-499a-b579-32e4aa369df5"/>
+          <field name="dummy_char" description="" type="char" length="10" uuid="cadd88cc-0d52-46c5-9daf-975085a50b8e"/>
+          <field name="dummy_int16" description="" type="integer" length="2" uuid="ca7f8ef6-abbb-49da-9165-e97b6d1062cc"/>
+          <field name="dummy_int32" description="" type="integer" length="4" uuid="c9f62a3d-84af-4552-848f-7fc35124021a"/>
+          <field name="dummy_int64" description="" type="integer" length="8" uuid="cc69b4db-017e-4a57-837a-9e916ab40728"/>
+          <field name="dummy_float" description="" type="float" length="4" uuid="29d3812a-82c2-4022-9e88-4b1edd980432"/>
+          <field name="dummy_double" description="" type="float" length="8" uuid="23319e53-4f4e-48ad-b6df-93d4d432ed33"/>
+          <field name="dummy_text" description="" type="text" uuid="76df4e6a-785e-4615-b112-19b764e61c05"/>
+          <field name="dummy_datetime" description="" type="datetime" uuid="74860bb5-21eb-4eaf-b213-904587839d37"/>
+          <field name="dummy_uuid" description="" type="uuid" uuid="8d506bbb-9e41-4f51-a522-3646977d0bb5"/>
+          <field name="dummy_id" description="" type="id" uuid="9e593d3f-15fe-42ba-b9f2-6248dc6d16df"/>
+        </fields>
+      </table>
+    </tables>
+    <keys>
+      <key name="Owner" description="" uuid="f39d26c0-1e62-4133-b08f-10bb3855c223"/>
+    </keys>
+    <events>
+      <event name="inserted" description="" uuid="12b3e063-7aa8-44e7-bc8c-4a1b1a238454"/>
+      <event name="deleted" description="" uuid="9507ee43-ea4b-4ba7-88b2-9391ca59dc8a"/>
+    </events>
+  </specification>
+  <apps>
+    <app uuid="cefb4ed2-4ce3-4825-8550-b68a3c142f0a" name="Test Perspective" description="Sample perspective used for testing.">
+      <tables>
+        <table name="dummy" description="" specification="195f5ecf-7da9-46c7-af09-3e6c0aaaf782" selective="true">
+          <fields>
+            <field name="dummy_int8" description="" specification="43afa38a-28c0-46fc-bd0e-4e302e8583ae"/>
+            <field name="dummy_bool" description="" specification="6666c7a8-ae19-470a-88c3-5410f0ef6cbd"/>
+            <field name="dummy_blob" description="" specification="9ddabd19-4af4-499a-b579-32e4aa369df5"/>
+            <field name="dummy_char" description="" specification="cadd88cc-0d52-46c5-9daf-975085a50b8e"/>
+            <field name="dummy_int16" description="" specification="ca7f8ef6-abbb-49da-9165-e97b6d1062cc"/>
+            <field name="dummy_int32" description="" specification="c9f62a3d-84af-4552-848f-7fc35124021a"/>
+            <field name="dummy_int64" description="" specification="cc69b4db-017e-4a57-837a-9e916ab40728"/>
+            <field name="dummy_float" description="" specification="29d3812a-82c2-4022-9e88-4b1edd980432"/>
+            <field name="dummy_double" description="" specification="23319e53-4f4e-48ad-b6df-93d4d432ed33"/>
+            <field name="dummy_text" description="" specification="76df4e6a-785e-4615-b112-19b764e61c05"/>
+            <field name="dummy_datetime" description="" specification="74860bb5-21eb-4eaf-b213-904587839d37"/>
+            <field name="dummy_uuid" description="" specification="8d506bbb-9e41-4f51-a522-3646977d0bb5"/>
+            <field name="dummy_id" description="" specification="9e593d3f-15fe-42ba-b9f2-6248dc6d16df"/>
+            <field name="foreign_key_id" description="" type="foreign_key" foreign_table="dummy" foreign_key="key" foreign_inverse="false"/>
+            <field name="id" description="" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
+            <field name="created_at" description="" specification="b749da4b-3c27-4e11-8be2-6cc5c9cdc7c7"/>
+            <field name="updated_at" description="" specification="b34d7140-9005-4362-aa5d-1e091f5772df"/>
+            <field name="human_readable" description="" specification="4cf63bae-c2a9-4958-8809-087d67ff782a"/>
+            <field name="card" description="" specification="2a8ea640-4311-498f-9190-db0442f785c3"/>
+            <field name="foreign_key1_id" description="" type="foreign_key" foreign_table="dummy" foreign_key="key1" foreign_inverse="false"/>
+          </fields>
+        </table>
+        <table name="virt" description="">
+          <fields>
+            <field name="dummy_id" description="" type="foreign_key" foreign_table="dummy" foreign_key="key" foreign_inverse="false"/>
+            <field name="self" description="" type="foreign_key" foreign_table="virt" foreign_key="key" foreign_inverse="false"/>
+            <field name="inverse" description="" type="foreign_key" foreign_table="dummy" foreign_key="key" foreign_inverse="true"/>
+            <field name="dummy_id1" description="" type="foreign_key" foreign_table="dummy" foreign_key="key" foreign_inverse="false"/>
+            <field name="dummy_id2" description="" type="foreign_key" foreign_table="dummy" foreign_key="key1" foreign_inverse="false"/>
+            <field name="dummy2_id" description="" type="foreign_key" foreign_table="dummy_2" foreign_key="key1" foreign_inverse="false"/>
+            <field name="id" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
+          </fields>
+        </table>
+        <table name="fields_selective" description="" specification="76231b4f-0c1a-453f-9cf4-f299bd043436" selective="true">
+          <fields>
+            <field name="id" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
+          </fields>
+        </table>
+        <table name="fields_inclusive" description="" specification="76231b4f-0c1a-453f-9cf4-f299bd043436" selective="false">
+          <fields>
+            <field name="id" description="" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
+            <field name="table_id" description="" type="foreign_key" foreign_table="tables_inclusive" foreign_key="owner" foreign_inverse="false"/>
+          </fields>
+        </table>
+        <table name="dummy_child" description="" parent="dummy" selective="false">
+          <fields>
+          </fields>
+        </table>
+        <table name="dummy_2" description="" specification="195f5ecf-7da9-46c7-af09-3e6c0aaaf782" selective="false">
+          <fields>
+            <field name="id" description="" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
+            <field name="dummy_char" specification="cadd88cc-0d52-46c5-9daf-975085a50b8e"/>
+          </fields>
+        </table>
+        <table name="dummy_renamed" description="Dummy with renamed fields." specification="195f5ecf-7da9-46c7-af09-3e6c0aaaf782" selective="false">
+          <fields>
+            <field name="bool_dummy" specification="6666c7a8-ae19-470a-88c3-5410f0ef6cbd"/>
+          </fields>
+        </table>
+        <table name="tables_inclusive" description="" specification="af4ffbee-0bfa-4211-9e6b-726b921df081" selective="false">
+          <fields>
+            <field name="id" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
+          </fields>
+        </table>
+      </tables>
+      <join_tables>
+        <join_table name="test_join" description="" key="key" table_left="dummy" table_right="dummy_2" column_name_left="dummy_id" column_name_right="dummy2_id"/>
+        <join_table name="test_join2" description="" key="key1" table_left="dummy" table_right="dummy_2" column_name_left="dummy_id" column_name_right="dummy2_id"/>
+        <join_table name="test_virt_join" description="" key="key" table_left="dummy" table_right="virt" column_name_left="dummy_id" column_name_right="virt_id"/>
+        <join_table name="test_virt_join2" description="" key="key1" table_left="dummy" table_right="virt" column_name_left="dummy_id" column_name_right="virt_id"/>
+      </join_tables>
+      <keys>
+        <key name="key" description=""/>
+        <key name="key1" description=""/>
+        <key name="owner" description="" specification="f39d26c0-1e62-4133-b08f-10bb3855c223"/>
+      </keys>
+      <events>
+        <event name="inserted" description="" specification="12b3e063-7aa8-44e7-bc8c-4a1b1a238454"/>
+        <event name="deleted" description="" specification="9507ee43-ea4b-4ba7-88b2-9391ca59dc8a"/>
+      </events>
+      <states>
+        <state name="dummy" description="">
+          <instance name="dummy" table="dummy">
+          </instance>
+        </state>
+        <state name="test_state_1" description="">
+          <instance name="dummy" table="dummy">
+            <instance name="dummy_2" table="dummy_2" key="key" join_invert="false" optional="false">
+            </instance>
+          </instance>
+        </state>
+      </states>
+      <listeners>
+        <listener name="test_listener_1_inserted" description="" persistent="true" state="test_state_1" event="inserted"/>
+      </listeners>
+    </app>
+  </apps>
+</uts>
