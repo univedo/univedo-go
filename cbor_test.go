@@ -2,10 +2,9 @@ package univedo
 
 import (
 	"bytes"
-	"github.com/nu7hatch/gouuid"
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 	"time"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func readMessage(s string) (interface{}, error) {
@@ -170,8 +169,7 @@ func TestCbor(t *testing.T) {
 		Convey("uuids", func() {
 			r, err := readMessage("\xd8\x25\x50\x68\x4E\xF8\x95\x72\xA2\x42\x98\xBC\x5B\x58\x0F\x1C\x1D\x27\x07")
 			So(err, ShouldBeNil)
-			ref, _ := uuid.ParseHex("684ef895-72a2-4298-bc5b-580f1c1d2707")
-			So(r, ShouldResemble, ref)
+			So(r, ShouldEqual, "684ef895-72a2-4298-bc5b-580f1c1d2707")
 		})
 	})
 
@@ -320,13 +318,6 @@ func TestCbor(t *testing.T) {
 			b, err := sendMessage(ref)
 			So(err, ShouldBeNil)
 			So(b, ShouldResemble, []byte("\xc0\x78\x1b\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30.000001\x5a"))
-		})
-
-		Convey("uuids", func() {
-			ref, _ := uuid.ParseHex("684ef895-72a2-4298-bc5b-580f1c1d2707")
-			b, err := sendMessage(ref)
-			So(err, ShouldBeNil)
-			So(b, ShouldResemble, []byte("\xd8\x25\x50\x68\x4E\xF8\x95\x72\xA2\x42\x98\xBC\x5B\x58\x0F\x1C\x1D\x27\x07"))
 		})
 	})
 }

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/nu7hatch/gouuid"
+	"fmt"
 	"time"
 )
 
@@ -182,11 +182,11 @@ func (m *message) read() (interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			dataSlice, ok := data.([]byte)
-			if !ok {
-				return nil, errors.New("expected bytestring in cbor protocol")
+			b, ok := data.([]byte)
+			if !ok || len(b) != 16 {
+				return nil, errors.New("expected bytestring of length 16 in cbor protocol")
 			}
-			return uuid.Parse(dataSlice)
+			return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:]), nil
 
 		case tagRecord:
 			return m.read()
@@ -374,11 +374,6 @@ func (m *message) send(pObj interface{}) error {
 				return err
 			}
 		}
-
-	case *uuid.UUID:
-		m.sendTag(tagUuid)
-		d := [16]byte(*obj)
-		m.send(d[:])
 
 	case time.Time:
 		m.sendTag(tagDateTime)
