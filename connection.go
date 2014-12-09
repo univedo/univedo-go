@@ -44,6 +44,7 @@ func Dial(url string) (*Connection, error) {
 	}
 
 	// Dial the websocket
+	url += "v1"
 	ws, err := websocket.Dial(url, "", origin)
 	if err != nil {
 		return nil, err
