@@ -3,6 +3,7 @@ package univedo
 import (
 	"bytes"
 	"errors"
+	"strings"
 
 	"code.google.com/p/go.net/websocket"
 	// TODO remove
@@ -44,6 +45,10 @@ func Dial(url string) (*Connection, error) {
 	}
 
 	// Dial the websocket
+	if !strings.HasSuffix(url, "/") {
+		url += "/"
+	}
+
 	url += "v1"
 	ws, err := websocket.Dial(url, "", origin)
 	if err != nil {
