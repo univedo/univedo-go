@@ -56,10 +56,6 @@ func TestSession(t *testing.T) {
 			pingTest(1.1)
 		})
 
-		Convey("pings floats", func() {
-			pingTest(1.1)
-		})
-
 		Convey("pings strings", func() {
 			pingTest("foobar")
 		})

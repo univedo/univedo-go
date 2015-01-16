@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<uts date="2014-10-06 13:11:04 +0000" generator="uspec" version="1.0">
+<uts date="2015-01-16 16:03:20 +0000" generator="uspec" version="1.0">
   <specification>
     <tables>
+      <table name="BucketRevision" description="" uuid="01808530-0754-4661-9a6c-15737c023ad4">
+        <fields>
+          <field name="perspective" description="" type="id" uuid="33be27d7-f768-49f3-aaf9-e7c0ff81eb01"/>
+        </fields>
+      </table>
       <table name="Tables" description="Atomic table objects in the Univedo data model." uuid="af4ffbee-0bfa-4211-9e6b-726b921df081">
         <fields>
           <field name="name" description="" type="char" length="50" uuid="607b39d7-b959-4ccf-8a65-94f6c5e1d9e5"/>
@@ -45,6 +50,7 @@
     <events>
       <event name="inserted" description="" uuid="12b3e063-7aa8-44e7-bc8c-4a1b1a238454"/>
       <event name="deleted" description="" uuid="9507ee43-ea4b-4ba7-88b2-9391ca59dc8a"/>
+      <event name="updated" description="" uuid="b2db0a97-001a-454b-9119-48a3c7a42c7f"/>
     </events>
   </specification>
   <apps>
@@ -116,6 +122,14 @@
             <field name="id" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
           </fields>
         </table>
+        <table name="bucket_revisions" description="" specification="01808530-0754-4661-9a6c-15737c023ad4" selective="false">
+          <fields>
+            <field name="perspective" specification="33be27d7-f768-49f3-aaf9-e7c0ff81eb01"/>
+            <field name="id" specification="c36ce2f6-c4f9-4133-841d-3da4f45f62ca"/>
+            <field name="created_at" specification="b749da4b-3c27-4e11-8be2-6cc5c9cdc7c7"/>
+            <field name="creator_id" specification="8925cce6-3b67-4eff-b30f-a57b90545c51"/>
+          </fields>
+        </table>
       </tables>
       <join_tables>
         <join_table name="test_join" description="" key="key" table_left="dummy" table_right="dummy_2" column_name_left="dummy_id" column_name_right="dummy2_id"/>
@@ -131,6 +145,7 @@
       <events>
         <event name="inserted" description="" specification="12b3e063-7aa8-44e7-bc8c-4a1b1a238454"/>
         <event name="deleted" description="" specification="9507ee43-ea4b-4ba7-88b2-9391ca59dc8a"/>
+        <event name="updated" description="" specification="b2db0a97-001a-454b-9119-48a3c7a42c7f"/>
       </events>
       <states>
         <state name="dummy" description="">
@@ -138,14 +153,21 @@
           </instance>
         </state>
         <state name="test_state_1" description="">
-          <instance name="dummy" table="dummy">
-            <instance name="dummy_2" table="dummy_2" key="key" join_invert="false" optional="false">
+          <instance name="dummy_i" table="dummy">
+            <instance name="dummy_2_i" table="dummy_2" key="key" join_invert="false" optional="false">
+            </instance>
+          </instance>
+        </state>
+        <state name="test_state_2" description="">
+          <instance name="dummy_i" table="dummy">
+            <instance name="dummy_i_2" table="dummy" key="key" join_invert="false" optional="false">
+            </instance>
+            <instance name="dummy_2_i" table="dummy_2" key="key" join_invert="false" optional="false">
             </instance>
           </instance>
         </state>
       </states>
       <listeners>
-        <listener name="test_listener_1_inserted" description="" persistent="true" state="test_state_1" event="inserted"/>
       </listeners>
     </app>
   </apps>
