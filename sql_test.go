@@ -8,13 +8,13 @@ import (
 	"testing"
 )
 
-const testPerspectiveURL = "ws://localhost:9011/db2e64b0-b294-4a0e-85b2-88903ee80943/cefb4ed2-4ce3-4825-8550-b68a3c142f0a"
+const testPerspectiveURL = "ws://localhost:9011/db2e64b0-b294-4a0e-85b2-88903ee80943/cefb4ed2-4ce3-4825-8550-b68a3c142f0a?username=marvin"
 
 func setupDB() {
 	connection, err := Dial(testURL)
 	So(err, ShouldBeNil)
 	So(connection, ShouldNotBeNil)
-	session, err := connection.GetSession("db2e64b0-b294-4a0e-85b2-88903ee80943", map[string]interface{}{})
+	session, err := connection.GetSession("db2e64b0-b294-4a0e-85b2-88903ee80943", map[string]interface{}{"username": "marvin"})
 	So(err, ShouldBeNil)
 	So(session, ShouldNotBeNil)
 	testFile, err := ioutil.ReadFile("test.uts")

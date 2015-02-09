@@ -30,13 +30,20 @@ func (UnivedoDriver) Open(name string) (driver.Conn, error) {
 
 	u.Path = "/"
 
+	// Extract credentials from url
+	creds := map[string]interface{}{}
+	for k, v := range u.Query() {
+		creds[k] = v[0]
+	}
+	u.RawQuery = ""
+
 	// Open connection and perspective
 	connection, err := Dial(u.String())
 	if err != nil {
 		return nil, err
 	}
 
-	session, err := connection.GetSession(bucketName, map[string]interface{}{})
+	session, err := connection.GetSession(bucketName, creds)
 	if err != nil {
 		return nil, err
 	}

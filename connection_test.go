@@ -14,7 +14,7 @@ func pingTest(v interface{}) {
 	connection, err := Dial(testURL)
 	So(err, ShouldBeNil)
 	So(connection, ShouldNotBeNil)
-	session, err := connection.GetSession("79CB0F8E-3D90-484A-9A88-B13E97FA65D9", map[string]interface{}{})
+	session, err := connection.GetSession("79CB0F8E-3D90-484A-9A88-B13E97FA65D9", map[string]interface{}{"username": "marvin"})
 	So(err, ShouldBeNil)
 	So(session, ShouldNotBeNil)
 	pong, err := session.Ping(v)
@@ -64,6 +64,10 @@ func TestSession(t *testing.T) {
 			pingTest([]interface{}{"1", "2"})
 		})
 
+		Convey("pings maps", func() {
+			pingTest(map[string]interface{}{"1": "a", "2": "b"})
+		})
+
 		Convey("pings times", func() {
 			t, _ := time.Parse(time.RFC3339Nano, "2013-03-21T20:04:00.000001Z")
 			pingTest(t)
@@ -73,7 +77,7 @@ func TestSession(t *testing.T) {
 			connection, err := Dial(testURL)
 			So(err, ShouldBeNil)
 			So(connection, ShouldNotBeNil)
-			session, err := connection.GetSession("79CB0F8E-3D90-484A-9A88-B13E97FA65D9", map[string]interface{}{})
+			session, err := connection.GetSession("79CB0F8E-3D90-484A-9A88-B13E97FA65D9", map[string]interface{}{"username": "marvin"})
 			So(err, ShouldBeNil)
 			So(session, ShouldNotBeNil)
 			testFile, err := ioutil.ReadFile("test.uts")
