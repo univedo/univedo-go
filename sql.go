@@ -195,6 +195,10 @@ func newResult(id uint64, s sender) RemoteObject {
 	}
 
 	r.Notifications["setId"] = func(args []interface{}) {
+		// TODO remove
+		defer func() {
+			_ = recover()
+		}()
 		// TODO error handling
 		if len(args) != 1 {
 			panic("setId without args")
